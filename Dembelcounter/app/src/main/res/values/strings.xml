@@ -1,4 +1,10 @@
 <resources>
     <string name="app_name">Dembel-counter</string>
     <string name="headerText">Введите дату начала службы</string>
+    <string name="past">Прошло</string>
+    <string name="days">Дней :</string>
+    <string name="hours">Часов :</string>
+    <string name="seconds">Секунд :</string>
+    <string name="left">Осталось</string>
+    <string name="findOut">Узнать когда дембель</string>
 </resources>

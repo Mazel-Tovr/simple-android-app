@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Dembel-counter</string>
+    <string name="headerText">Введите дату начала службы</string>
+</resources>

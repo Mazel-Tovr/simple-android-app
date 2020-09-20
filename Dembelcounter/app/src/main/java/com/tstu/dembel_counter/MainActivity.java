@@ -1,16 +1,23 @@
 package com.tstu.dembel_counter;
 
-import android.text.*;
+import android.os.Bundle;
+import android.text.Editable;
+import android.text.InputFilter;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.EditText;
 import androidx.appcompat.app.AppCompatActivity;
-import android.os.Bundle;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
-public class MainActivity extends AppCompatActivity {
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
-    private EditText inputDateBox, daysPastBox, hoursPastBox, secondPastBox, daysLeftBox, hoursLeftBox, secondLeftBox;
-    private ConstraintLayout firstLayout,secondLayout;
+public class MainActivity extends AppCompatActivity {
+    private final SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy");
+    private EditText inputDateBox, daysPastBox, hoursPastBox, secondPastBox, daysLeftBox, hoursLeftBox, secondLeftBox, endDutyDate;
+    private ConstraintLayout firstLayout, secondLayout, dutyLayout;
+    private volatile boolean flag;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -18,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         firstLayout = findViewById(R.id.firstLayout);
         secondLayout = findViewById(R.id.secondLayout);
+        dutyLayout = findViewById(R.id.constraintLayout2);
         inputDateBox = findViewById(R.id.inputDate);
         daysPastBox = findViewById(R.id.editTextDaysPast);
         hoursPastBox = findViewById(R.id.editTextHoursPast);
@@ -25,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
         daysLeftBox = findViewById(R.id.editTextDaysLeft);
         hoursLeftBox = findViewById(R.id.editTextHoursLeft);
         secondLeftBox = findViewById(R.id.editTextSecondsLeft);
+        endDutyDate = findViewById(R.id.editEndDutyDate);
         inputDateBox.setFilters(new InputFilter[]{new InputFilter.LengthFilter(10)});
         inputDateBox.addTextChangedListener(new TextWatcher() {
             int beforeTextChangedLength;
@@ -32,10 +41,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 beforeTextChangedLength = charSequence.length();
+                flag = false;
             }
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
             }
 
             @Override
@@ -63,7 +74,62 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void findOutDembelDate(View view) {
-        firstLayout.setVisibility(View.VISIBLE);
-        secondLayout.setVisibility(View.VISIBLE);
+        try {
+            System.gc();
+            Utils.isValidDate(inputDateBox.getText().toString());
+            setVisible(View.VISIBLE);
+            Date startDate = format.parse(inputDateBox.getText().toString());
+            Date endDate = Utils.getDatePlusYear(startDate);
+            endDutyDate.setText(format.format(endDate));
+            flag = true;
+            new Thread(() -> {
+                while (flag) {
+                    try {
+                        Thread.sleep(1000);
+                        long milliseconds = (new Date().getTime() - startDate.getTime());
+                        long days = TimeUnit.MILLISECONDS.toDays(milliseconds);
+                        long hours = TimeUnit.MILLISECONDS.toHours(milliseconds) - TimeUnit.DAYS.toHours(days);
+                        long seconds = TimeUnit.MILLISECONDS.toSeconds(milliseconds) - TimeUnit.HOURS.toSeconds(hours);
+                        daysPastBox.setText(String.valueOf(days));
+                        hoursPastBox.setText(String.valueOf(hours));
+                        secondPastBox.setText(String.valueOf(seconds));
+
+                    } catch (InterruptedException ignored) {
+
+                    }
+
+                }
+            }).start();
+
+            new Thread(() -> {
+                while (flag) {
+                    try {
+                        Thread.sleep(1000);
+                        long milliseconds = (endDate.getTime() - new Date().getTime());
+                        long days = TimeUnit.MILLISECONDS.toDays(milliseconds);
+                        long hours = TimeUnit.MILLISECONDS.toHours(milliseconds) - TimeUnit.DAYS.toHours(days);
+                        long seconds = TimeUnit.MILLISECONDS.toSeconds(milliseconds) - TimeUnit.HOURS.toSeconds(hours);
+                        daysLeftBox.setText(String.valueOf(days));
+                        hoursLeftBox.setText(String.valueOf(hours));
+                        secondLeftBox.setText(String.valueOf(seconds));
+
+                    } catch (InterruptedException ignored) {
+
+                    }
+
+                }
+            }).start();
+
+
+        } catch (Exception ignore) {
+
+        }
     }
+
+    private void setVisible(int visible) {
+        dutyLayout.setVisibility(visible);
+        firstLayout.setVisibility(visible);
+        secondLayout.setVisibility(visible);
+    }
+
 }

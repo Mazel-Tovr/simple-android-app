@@ -7,4 +7,5 @@
     <string name="seconds">Секунд :</string>
     <string name="left">Осталось</string>
     <string name="findOut">Узнать когда дембель</string>
+    <string name="EndDutyText">Дата окончания службы :</string>
 </resources>
